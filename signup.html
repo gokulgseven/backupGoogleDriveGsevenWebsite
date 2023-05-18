@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User</title>
+</head>
+
+<body>
+    <div id="nav"></div>
+    <h1>Create User</h1>
+    <form onsubmit="event.preventDefault()">
+        <label for="username">username</label>
+        <input type="text" name="username" id="username">
+        <br>
+        <label for="psw">password</label>
+        <input type="password" name="psw" id="password">
+        <br>
+        <input type="submit" onclick="submitSignup(event)">
+        <button onclick="back(event)">cancle</button>
+    </form>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+        function back() {
+            window.location.href = "users.html";
+        }
+        function submitSignup(event) {
+            event.preventDefault();
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+            let formData = new FormData();
+            formData.append("username", username);
+            formData.append("password", password);
+            fetch(`${localStorage.getItem("url")}/signup?username=${username}&password=${password}`, {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    window.location.href = "users.html";
+                })
+                .catch(error => {
+                    console.log(error)
+                    alert("error")
+                });
+        }
+    </script>
+    <script>
+        $(function () {
+            $("#nav").load("nav.html");
+        });
+    </script>
+</body>
+
+
+</html>

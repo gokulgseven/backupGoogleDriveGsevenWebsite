@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+
+<body>
+    <div id="nav"></div>
+    <h1>Login</h1>
+
+    <form onsubmit="event.preventDefault()">
+        <label for="username">Username</label>
+        <input type="text" name="username" id="username">
+        <br>
+        <label for="psw">Password</label>
+        <input type="password" name="psw" id="password">
+        <br>
+        <input type="submit" onclick="submitLogin(event)">
+    </form>
+    <!--  -->
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script>
+    
+    function submitLogin(event) {
+        event.preventDefault();
+        let username = document.getElementById("username").value;
+        let password = document.getElementById("password").value;
+
+        fetch(`${localStorage.getItem("url")}/login?username=${username}&password=${password}`, {
+            method: "POST",
+            body: JSON.stringify({ username, password })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    localStorage.setItem("token", data.token);
+                    window.location.href = "users.html";
+                }
+            })
+            .catch(error => {
+                alert("error")
+            });
+    }
+</script>
+<script>
+    $(function () {
+        $("#nav").load("nav.html");
+    });
+</script>
+
+</html>

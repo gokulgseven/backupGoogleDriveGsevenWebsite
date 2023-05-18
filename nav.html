@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        nav ul{
+            display: flex;
+            gap: 20px;
+        }
+        ul li{
+            list-style: none;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li>
+                <a href="./login.html">Login</a>
+            </li>
+            <li>
+                <!-- <a href="./signup.html">Logout</a> -->
+                <button onclick="logutFn()">Logout</button>
+            </li>
+            <li>
+                <a href="./users.html">Users</a>
+            </li>
+            <li>
+                <a href="./license.html">License</a>
+            </li>
+        </ul>
+    </nav>
+</body>
+<script>
+    function logutFn(){
+        localStorage.removeItem("token");
+        window.location.href = "login.html"
+    }
+</script>
+</html>

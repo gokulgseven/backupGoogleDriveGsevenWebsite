@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users Info</title>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="nav"></div>
+    <h1>User</h1>
+    <button onclick="refreshPage()">Refresh</button>
+    <a href="./signup.html"><button>Create</button></a>
+    <table id="userTable">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Password</th>
+                <th>role</th>
+                <th>Action</th>
+
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+        function refreshPage() {
+            location.reload();
+        }
+
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token"),
+            }
+        };
+
+        fetch(`${localStorage.getItem("url")}/users`, requestOptions)
+            .then(response => response.json())
+            .then(res => {
+                let data = res.data
+                console.log(data)
+
+                const tableBody = document.querySelector("#userTable tbody");
+
+                data.forEach(user => {
+
+                    //create row 
+                    const row = document.createElement("tr");
+
+                    const usernameCell = document.createElement("td");
+                    usernameCell.textContent = user.username
+                    row.appendChild(usernameCell);
+
+                    const passwordCell = document.createElement("td");
+                    passwordCell.textContent = user.password;
+                    row.appendChild(passwordCell);
+
+                    const roleCell = document.createElement("td");
+                    roleCell.textContent = user.role;
+                    row.appendChild(roleCell);
+
+                    const actionCell = document.createElement("td")
+                    if (user.role != "admin") {
+                        const deleteButton = document.createElement("button");
+                        deleteButton.addEventListener("click", () => {
+                            deleteUser(user._id); // Replace with the actual delete function
+                        });
+                        deleteButton.textContent = "Delete";
+                        actionCell.appendChild(deleteButton);
+                    }
+
+                    // const actionCell = document.createElement("td");
+
+                    row.appendChild(actionCell);
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                alert(error);
+            });
+
+        function deleteUser(userId) {
+            const requestOptions = {
+                method: "DELETE",
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token"),
+                }
+            };
+            fetch(`${localStorage.getItem("url")}/users?id=${userId}`, requestOptions)
+                .then(response => response.json())
+            refreshPage()
+        }
+
+        function editUser(userId) {
+            alert(`Deleting user with ID: ${userId}`);
+            refreshPage()
+        }
+        $(function () {
+            $("#nav").load("nav.html");
+        });
+    </script>
+    <script>
+        $(function () {
+            $("#nav").load("nav.html");
+        });
+    </script>
+
+</body>
+
+</html>

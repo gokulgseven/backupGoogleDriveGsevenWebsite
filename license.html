@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users Info</title>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            list-style: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="nav"></div>
+    <h1>License</h1>
+    <button onclick="refreshPage()">Refresh</button>
+    <a href="./createLicense.html"><button>Create</button></a>
+    <table id="userTable">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>macaddress</th>
+                <th>machine name</th>
+                <th>drive</th>
+                <th>service email</th>
+                <th>backup config</th>
+                <th>backup</th>
+                <th>action</th>
+
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+        function refreshPage() {
+            location.reload();
+        }
+
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token"),
+            }
+        };
+
+        fetch(`${localStorage.getItem("url")}/license`, requestOptions)
+            .then(response => response.json())
+            .then(res => {
+                let data = res.data
+                console.log(data)
+
+                const tableBody = document.querySelector("#userTable tbody");
+
+                data.forEach(user => {
+
+                    //create row 
+                    const row = document.createElement("tr");
+
+                    const usernameCell = document.createElement("td");
+                    usernameCell.textContent = user.username
+                    row.appendChild(usernameCell);
+
+                    const macAddress = document.createElement("td");
+                    macAddress.textContent = user.macAddress;
+                    row.appendChild(macAddress);
+
+                    const machineName = document.createElement("td");
+                    machineName.textContent = user.machineName;
+                    row.appendChild(machineName);
+                    const drive = document.createElement("td");
+                    drive.textContent = user.drive;
+                    row.appendChild(drive);
+
+                    const serviceEmail = document.createElement("td");
+                    serviceEmail.textContent = user.googleServicAcc.client_email;
+                    row.appendChild(serviceEmail);
+
+                    const backupConfig = document.createElement("td");
+
+                    let ul = document.createElement("ul");
+                    for (let i = 0; i < user.backupConfig.length; i++) {
+                        const li0 = document.createElement("li");
+                        const li1 = document.createElement("li");
+                        const li2 = document.createElement("li");
+                        const li3 = document.createElement("li");
+                        const li4 = document.createElement("li");
+                        li0.textContent = i
+                        li1.textContent = user.backupConfig[i].filePath
+                        li2.textContent = user.backupConfig[i].driveFolder
+                        li3.textContent = user.backupConfig[i].fileName
+                        li4.innerHTML = "&nbsp;"
+
+
+                        ul.appendChild(li0)
+                        ul.appendChild(li1)
+                        ul.appendChild(li2)
+                        ul.appendChild(li3)
+                        ul.appendChild(li4)
+                    }
+
+                    backupConfig.appendChild(ul)
+                    // backupConfig.textContent = user.backupConfig.filePath;
+                    row.appendChild(backupConfig);
+
+                    const backup = document.createElement("td");
+
+                    backup.textContent = user.backup;
+                    row.appendChild(backup);
+
+                    const actionCell = document.createElement("td")
+                    if (user.role != "admin") {
+                        const deleteButton = document.createElement("button");
+                        deleteButton.addEventListener("click", () => {
+                            deleteUser(user._id); // Replace with the actual delete function
+                        });
+                        deleteButton.textContent = "Delete";
+                        actionCell.appendChild(deleteButton);
+                    }
+                    const editButton = document.createElement("button")
+                    editButton.addEventListener("click", () => {
+                        editUser(user._id)
+                    })
+                    editButton.textContent = "edit"
+                    actionCell.appendChild(editButton)
+
+                    // const actionCell = document.createElement("td");
+
+                    row.appendChild(actionCell);
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                alert(error);
+            });
+
+        function deleteUser(userId) {
+            const requestOptions = {
+                method: "DELETE",
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token"),
+                }
+            };
+            fetch(`${localStorage.getItem("url")}/license?id=${userId}`, requestOptions)
+                .then(response => response.json())
+            refreshPage()
+        }
+
+        function editUser(userId) {
+            localStorage.setItem("license", userId);
+            window.location.href = "editLicense.html";
+        }
+        $(function () {
+            $("#nav").load("nav.html");
+        });
+    </script>
+    <script>
+        $(function () {
+            $("#nav").load("nav.html");
+        });
+    </script>
+</body>
+
+</html>
