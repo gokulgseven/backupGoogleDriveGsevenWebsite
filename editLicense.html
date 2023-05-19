@@ -12,14 +12,13 @@
     <div id="nav"></div>
     <h1>Edit License</h1>
     <form action="" onsubmit="event.preventDefault()">
-        <div id="form">
-
-        </div>
+        <div id="form"></div>
         <button onclick="submitFn(event)">Submit</button>
-        <button onclick="back(event)">cancle</button>
+        <button onclick="back(event)">cancel</button>
     </form>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script>
+        
         let def = {
             "username": "gokul@gmail.com",
             "macAddress": "cc:2f:71:12:84:2c",
@@ -71,8 +70,12 @@
                 }
 
                 let bc_0 = {}
-                for (item of Object.keys(backupConfig[0])) {
-                    bc_0["bc_0_" + item] = backupConfig[0][item]
+                try {
+                    for (item of Object.keys(backupConfig[0])) {
+                        bc_0["bc_0_" + item] = backupConfig[0][item]
+                    }
+                } catch {
+                    bc_0 = false
                 }
 
                 let bc_1 = {}
@@ -93,16 +96,13 @@
                     bc_2 = false
                 }
 
-                let getData0 = { ...a, ...gsa, ...bc_0 }
-                let getData
-                if (bc_1 != false && bc_2 == false) {
-                    getData = { ...getData0, ...bc_1 }
-                }
-                if (bc_2 != false && bc_1 != false) {
-                    getData = { ...getData0, ...bc_1, ...bc_2 }
-                }
 
-                console.log("getdat", getData)
+                let getData = { ...a, ...gsa }
+                bc_0 ? getData = { ...getData, ...bc_0 } : x = "";
+                bc_1 ? getData = { ...getData, ...bc_1 } : x = "";
+                bc_2 ? getData = { ...getData, ...bc_2 } : x = "";
+
+                // console.log("getdata", getData)
 
                 //create form 
 
@@ -119,8 +119,8 @@
                     input.style.marginLeft = "10px";
                     input.style.marginBottom = "10px";
 
-                    if (def_list[i] == "gsa_client_x509_cert_url" || def_list[i] == "gsa_private_key" ){
-                        input.setAttribute("size", "100");
+                    if (def_list[i] == "gsa_client_x509_cert_url" || def_list[i] == "gsa_private_key") {
+                        input.setAttribute("size", "50");
                     }
 
                     if (def_list[i] == "backup") {
@@ -144,7 +144,8 @@
         function back() {
             window.location.href = "license.html";
         }
-        function submitFn() {
+        function submitFn(event) {
+            event.preventDefault()
             let data = {}
             for (let i = 0; i < def_list.length; i++) {
 
@@ -205,11 +206,15 @@
                 });
         }
 
+
+
+
     </script>
     <script>
         $(function () {
             $("#nav").load("nav.html");
         });
+
     </script>
 </body>
 

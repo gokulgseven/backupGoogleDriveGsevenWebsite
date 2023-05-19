@@ -6,11 +6,45 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        #dropzone {
+            width: 300px;
+            height: 50px;
+            border: 2px dashed gray;
+            margin: 20px;
+            padding: 20px;
+        }
+
+        #gendetails {
+            width: 300px;
+            height: 50px;
+            border: 2px dashed gray;
+            margin: 20px;
+            padding: 20px;
+        }
+
+        #topinput {
+            display: flex;
+        }
+    </style>
 </head>
 
 <body>
     <div id="nav"></div>
     <h1>Create License</h1>
+
+    <div id="topinput">
+        <div id="left-side">
+            <label>Add api file</label><br>
+            <div id="dropzone">Drop cred.json file here</div>
+        </div>
+
+        <div id="right-side">
+            <button onclick="getgendetails()">General details</button><br>
+            <textarea name="" id="gendetails" cols="50" rows="10"></textarea>
+        </div>
+    </div>
+
     <form action="" onsubmit="event.preventDefault()">
         <div id="form">
 
@@ -20,22 +54,114 @@
     </form>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script>
+        var convertedJson = {}
+
+        function getgendetails() {
+            let textarea = document.getElementById("gendetails").value
+            let arr = textarea.split("\t");
+            let heads = [
+                "username",
+                "macAddress",
+                "machineName",
+                "drive",
+                "bc_0_filePath",
+                "bc_0_driveFolder",
+                "bc_0_fileName",
+                "bc_1_filePath",
+                "bc_1_driveFolder",
+                "bc_1_fileName",
+                "bc_2_filePath",
+                "bc_2_driveFolder",
+                "bc_2_fileName",
+            ]
+            let quickdata = {}
+            for (let i = 0; i < heads.length; i++){
+                quickdata[heads[i]] = arr[i] || ""
+            }
+
+            for (let key in quickdata){
+                let input = document.getElementById(key)
+                input.value = quickdata[key]
+            }
+
+
+            console.log(quickdata)
+        }
+
+        function log() {
+            console.log(convertedJson)
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var dropzone = document.getElementById("dropzone");
+
+            // Prevent default behavior for drag events
+            dropzone.addEventListener("dragenter", preventDefault, false);
+            dropzone.addEventListener("dragover", preventDefault, false);
+            dropzone.addEventListener("dragleave", preventDefault, false);
+            dropzone.addEventListener("drop", handleDrop, false);
+
+            function preventDefault(event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            function handleDrop(event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                // Get the dropped file
+                var file = event.dataTransfer.files[0];
+
+                // Check if the file is a JSON file
+                if (file.type === "application/json") {
+                    var reader = new FileReader();
+
+                    // Read the file contents
+                    reader.onload = function (e) {
+                        var content = e.target.result;
+
+
+                        // Read the JSON file contents into a variable
+                        var jsonString = content; // Replace with the contents of your JSON file
+
+                        // Regular expression to extract the keys
+                        var regex = /"((?:\\.|[^"\\])*)":/g;
+                        var keys = [];
+                        var match;
+
+                        // Extract the keys from the JSON string
+                        while ((match = regex.exec(jsonString)) !== null) {
+                            keys.push(match[1]);
+                        }
+
+                        // Iterate over the extracted keys and retrieve their values
+                        var values = keys.map(function (key) {
+                            return JSON.parse('{"' + key.replace(/"/g, '\\"') + '": ' + jsonString + '}')[key];
+                        });
+
+
+                        for (const key in values[0]) {
+                            convertedJson["gsa_" + key] = values[0][key].replace(/\n/g, "\\n");
+                        }
+
+                        console.log(convertedJson)
+                        let gotvalue = document.getElementById("dropzone")
+                        gotvalue.innerHTML = convertedJson["gsa_client_email"]
+
+                    };
+
+                    reader.readAsText(file);
+                } else {
+                    console.log("Invalid file type. Please drop a JSON file.");
+                }
+            }
+        });
         let def = {
             "username": "gokul@gmail.com",
             "macAddress": "cc:2f:71:12:84:2c",
             "machineName": "gokulpc",
             "drive": "C",
-            "gsa_type": "service_account",
-            "gsa_project_id": "psyched-age-387016",
-            "gsa_private_key_id": "ec49a5371789bd62d3b158bece5fa5b0bfa0bba1",
-            "gsa_private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCm0tqWX+cO/Rbc\nv7KhGP0ngTbH1g1KI7qrwoPVj9XTEqg6QsMs5UX1i9FwHqf3XIviJLC1480CJnY/\nTISpePYGyOUPtAedVBesBi2Z6ADwZ1ELoqcxjXq5CYr/JLjdflB0GQ63gk9alYLB\nVPbE8Sf8wiIU4NzUgORx8MkgW9eVV0CKl8Jhlsw74Hi76QaDr5XwYz3V2B4OJd/p\nxQHsB/JcaM2KF7bCGJ6v7A7REiFx2WqmpG9suuoxqUlHvL6Tn/YlnTg/ljAynSrP\nWbo5Mjw7P+EEU/4HrArMJkYMJrEIn6iMiisjvbjQ6qFg2s08ndorgzfPsePtzQlH\nPyuv9z+pAgMBAAECggEABdJynZWkf4U1RBg+cdPzTtVaE0ns7g8r6OoUQN1rl8RC\njID6D+IDCb16067Fi32b0KqZjl7a77tQ/Gcis0maTX+QoKEL9Hwj34WE19FCiiFS\n8To4m03omuwCjA0Xf2cU2U5qu/G6FwCu3umEu2K+s7oAkj8MRJrTI4evn0Jb9mAL\nYoCJ24yQRf1pUPY7YJUSe09D0mgbI/U55gLxVU27bv4uPo/x4nEEGFyhqBH1Xsxl\nPMbx4I8cJe1BgslS+9XJM4IRlIxQBISMJSND7ylaEtT//7OCA9Q99dJugF9BvTEQ\nrNWhQcSoV2/RnnuN9pCKIQwQDylX8rwutPR7PtI3EQKBgQDj/zd1rvkvj3gJIPhF\nXnpzDSnw9BQe/S1E8/Q3gsWI1sLtTXcFdE/RV9iEzVmkdwttd8/8YvIt914j/Nei\nf8aVCMHp1+cWODRK3P5rxmVNk+lEQfTxNbYQ7Qea2HGA+6r42R8RB39P2mmsRG18\ncbwkRkvx6/TlUIUDErklv8bCWQKBgQC7UDLjEinTLQTpqDBl8h0sD2cVE5TEbGgu\nB1+MI2aCkYg1GMkHjmL6LNLpzlZbvJXmetJhToSZlQ26ZwCdCplW0eHSHtmrFRLY\nb6s1oKT+o3y+C1eYw/9Hvf4Csw5nfii5UbM4IwP+x8jI8NlxZ+VlfCHoCYPfI+Cd\ncLSBoVKd0QKBgQCaT2311IsKyYtwgkQGjz9JByvPzSKhJrGw7Xvo5jVTvCcJ/VgE\n9QfgpBgDKgj16yxs1p6KL13CBp5MtSAs91YsIFU+M8ZPn5Kk6JW50/lUXDuQ2yMw\n7i1fn016W+vWZH7/FdSU7gIYxbanxVhk1YWE958HCbAiVDDyN4XgKsAXYQKBgDJO\nUqxbV3JIt/YM3pqykJUhudyWOrEaMEyUXFvlsgVFEqC3/F2UJw7rdOWoLddLabLR\nr6jEjqY0utAiE68Zhp8jlRN6h5kD+uC39PJdJ5Lf04Oyxh7YHLpm005kSm0PG97R\ni2F7PfpyK4GT9cIYViqQUQbhb1JBb3S5LTFXYznRAoGAc12iQVn1o1Gsuo0Yq+yY\nbqQzdeWqariv9H8Pflk/Lwjg2s6Zr5/BWdW0Dhoyq4qmRwTBc+t4pR1ReO8ozb7/\ngABsmTuPBuicQtEEzzpCt9LDpJ20cq6LemM3Hbot3z9BHOk+Gw3KGK93HCTPf1v3\n2ecvSrReMmLlnEcsyrzCUz8=\n-----END PRIVATE KEY-----\n",
-            "gsa_client_email": "id-0001@psyched-age-387016.iam.gserviceaccount.com",
-            "gsa_client_id": "100740237978025509761",
-            "gsa_auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "gsa_token_uri": "https://oauth2.googleapis.com/token",
-            "gsa_auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-            "gsa_client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/id-0001%40psyched-age-387016.iam.gserviceaccount.com",
-            "gsa_universe_domain": "googleapis.com",
             "bc_0_filePath": "C:/AHK",
             "bc_0_driveFolder": "1AWeLtz91noN3tX2HwUcZ5GgpDp7puGao",
             "bc_0_fileName": "test",
@@ -61,22 +187,26 @@
             input.style.marginLeft = "10px";
             input.style.marginBottom = "10px";
 
-            if (def_list[i] == "gsa_client_x509_cert_url" || def_list[i] == "gsa_private_key") {
-                input.setAttribute("size", "100");
-            }
-
             if (def_list[i] == "backup") {
                 input.setAttribute("type", "checkbox");
+                input.checked = true
             }
+
             form.appendChild(label)
             form.appendChild(input)
             let space = document.createElement("br")
             form.appendChild(space)
         }
+
+
         function back() {
             window.location.href = "license.html";
         }
         function submitFn() {
+            if (!convertedJson.hasOwnProperty("gsa_type")){
+                alert("please add the creds file")
+                return 
+            }
             let data = {}
             for (let i = 0; i < def_list.length; i++) {
 
@@ -84,11 +214,12 @@
                     let boolvalue = document.getElementById(def_list[i])
                     data[def_list[i]] = boolvalue.checked ? true : false
                 } else {
-
                     data[def_list[i]] = document.getElementById(def_list[i]).value
                 }
 
             }
+
+            data = { ...data, ...convertedJson }
             // case a
             let arr = Object.keys(data)
             let x;
