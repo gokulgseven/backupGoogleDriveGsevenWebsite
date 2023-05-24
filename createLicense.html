@@ -244,8 +244,9 @@
             e.fileName == "" ? x = "" : f.push(e)
             let g = { ...a, googleServicAcc: b, backupConfig: f }
 
-            let newMacAddress = g.macAddress.toLowerCase().replace("-", ":")
+            let newMacAddress = g.macAddress.toLowerCase().replace(/-/g, ":")
             g.macAddress = newMacAddress
+            // alert(g.macAddress)
 
             console.log(g)
             const requestOptions = {
