@@ -244,6 +244,9 @@
             e.fileName == "" ? x = "" : f.push(e)
             let g = { ...a, googleServicAcc: b, backupConfig: f }
 
+            let newMacAddress = g.macAddress.toLowerCase().replace("-", ":")
+            g.macAddress = newMacAddress
+
             console.log(g)
             const requestOptions = {
                 method: "POST",
