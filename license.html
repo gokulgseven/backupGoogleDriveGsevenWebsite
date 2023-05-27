@@ -148,10 +148,30 @@
                             }
                             row.appendChild(ts);
 
+
+
+
+
+
+
                             const backup = document.createElement("td");
 
                             backup.textContent = user.backup;
+                            const viewButton = document.createElement("button")
+                            viewButton.addEventListener("click", () => {
+                                viewUser(user._id)
+                            })
+                            viewButton.textContent = "view"
+                            backup.appendChild(viewButton)
                             row.appendChild(backup);
+
+                           
+
+
+
+
+
+
 
                             const actionCell = document.createElement("td")
                             if (user.role != "admin") {
@@ -220,6 +240,12 @@
             console.log(userId)
             localStorage.setItem("license", userId);
             window.location.href = "editLicense.html";
+        }
+
+        function viewUser(userId){
+            console.log(userId)
+            localStorage.setItem("license", userId);
+            window.location.href = "viewLicenseBackup.html";
         }
         $(function () {
             $("#nav").load("nav.html");

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        ul {
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            list-style: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="nav"></div>
+    <h1 id="heading">Backup History for</h1>
+    <table id="tableDetails">
+        <tr>
+            <td>Field</td>
+            <td>value</td>
+        </tr>
+    </table>
+    <br>
+    <table id="backup">
+        <tr>
+            <td>index</td>
+            <td>Backup Success</td>
+            <td>time in hours</td>
+        </tr>
+    </table>
+    <br>
+    <button onclick="back(event)">Back</button>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+
+        function flattenObject(obj, prefix = '') {
+            let result = {};
+            for (let key in obj) {
+                if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    Object.assign(result, flattenObject(obj[key], `${prefix}${key}_`));
+                } else if (Array.isArray(obj[key])) {
+                    obj[key].forEach((item, index) => {
+                        Object.assign(result, flattenObject(item, `${prefix}${key}_${index}_`));
+                    });
+                } else {
+                    result[`${prefix}${key}`] = obj[key];
+                }
+            }
+            return result;
+        }
+
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token"),
+            }
+        };
+
+        fetch(`${localStorage.getItem("url")}/license?id=${localStorage.getItem("license")}`, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                let single = data.data
+                let { _id, googleServicAcc, ...rest } = { ...single }
+                let values = flattenObject(rest)
+                values["client_email"] = googleServicAcc["client_email"]
+
+
+
+                const tableBody = document.getElementById("tableDetails");
+
+                for (const item of Object.keys(values)) {
+
+                    const row = document.createElement("tr");
+                    row.setAttribute("id", values[item])
+
+                    const field = document.createElement("td");
+
+                    field.textContent = item
+                    row.appendChild(field);
+                    const value = document.createElement("td");
+                    value.textContent = values[item]
+                    row.appendChild(value);
+                    tableBody.appendChild(row);
+
+                }
+
+            })
+
+        fetch(`${localStorage.getItem("url")}/tracking/single/${localStorage.getItem("license")}`, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                let single = data.data
+
+                // console.log(single)
+
+
+                const tableBody = document.getElementById("backup");
+
+                let count = 0
+
+                for (const item of single) {
+
+
+                    const row = document.createElement("tr");
+                    row.setAttribute("id", item)
+
+                    const field = document.createElement("td");
+                    field.textContent = count
+                    row.appendChild(field);
+
+
+                    const inputDate = moment(item);
+                    const outputDate = inputDate.add(0, 'hours').add(0, 'minutes');
+                    const outputDateString = outputDate.format("DD-MMM HH:mm");
+
+
+                    const value = document.createElement("td");
+                    value.textContent = outputDateString
+                    row.appendChild(value);
+
+                    let hours
+                    // get com current time
+                    if (count == 0) {
+                        let current = new Date()
+                        var differenceMs = current.getTime() - new Date(item).getTime();
+                        var differenceHours = differenceMs / (1000 * 60 * 60);
+                        hours = Math.floor(differenceHours)
+
+                    } else {
+                        var differenceMs = new Date(single[count - 1]).getTime() - new Date(item).getTime();
+                        var differenceHours = differenceMs / (1000 * 60 * 60);
+                        hours = Math.floor(differenceHours)
+                    }
+
+                    const hh = document.createElement("td");
+                    hh.textContent = hours
+
+                    if (hours > 24) {
+                        row.style.background = "red"
+                    }
+
+                    row.appendChild(hh);
+
+
+                    tableBody.appendChild(row);
+
+                    count++
+
+                }
+
+            })
+
+
+        function back() {
+            window.location.href = "license.html";
+        }
+
+    </script>
+    <script>
+        $(function () {
+            $("#nav").load("nav.html");
+        });
+
+    </script>
+</body>
+
+</html>
