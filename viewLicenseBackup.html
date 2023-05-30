@@ -119,7 +119,7 @@
 
             // backup
 
-        fetch(`${localStorage.getItem("url")}/tracking/single/${localStorage.getItem("license")}`, requestOptions)
+        fetch(`${localStorage.getItem("url")}/tracking/success/${localStorage.getItem("license")}`, requestOptions)
             .then(response => response.json())
             .then(data => {
                 let single = data.data
@@ -184,7 +184,7 @@
 
 // success
 
-            fetch(`${localStorage.getItem("url")}/tracking/single/${localStorage.getItem("license")}`, requestOptions)
+            fetch(`${localStorage.getItem("url")}/tracking/backup/${localStorage.getItem("license")}`, requestOptions)
             .then(response => response.json())
             .then(data => {
                 let single = data.data
