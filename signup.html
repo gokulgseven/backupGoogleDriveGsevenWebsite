@@ -17,6 +17,8 @@
         <br>
         <label for="psw">password</label>
         <input type="password" name="psw" id="password">
+        <button type="button" onclick="generateAndPopulatePassword()">Generate Password</button>
+        <br>
         <br>
         <input type="submit" onclick="submitSignup(event)">
         <button onclick="back(event)">cancel</button>
@@ -25,6 +27,29 @@
     <script>
         function back() {
             window.location.href = "users.html";
+        }
+        function generatePassword(length) {
+            const uppercaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+            const numbers = '0123456789';
+
+            let password = '';
+
+            const characters = uppercaseLetters + lowercaseLetters + numbers;
+
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                password += characters.charAt(randomIndex);
+            }
+            console.log(password)
+
+            return password;
+        }
+
+        function generateAndPopulatePassword() {
+            const passwordField = document.getElementById("password");
+            const generatedPassword = generatePassword(16);
+            passwordField.value = generatedPassword;
         }
         function submitSignup(event) {
             event.preventDefault();

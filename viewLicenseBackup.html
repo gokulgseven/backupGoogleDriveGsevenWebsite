@@ -23,6 +23,10 @@
         li {
             list-style: none;
         }
+        .multi_table{
+            display: flex;
+            gap: 30px;
+        }
     </style>
 </head>
 
@@ -36,6 +40,7 @@
         </tr>
     </table>
     <br>
+    <div class="multi_table">
     <table id="backup">
         <tr>
             <td>index</td>
@@ -43,6 +48,14 @@
             <td>time in hours</td>
         </tr>
     </table>
+    <table id="success">
+        <tr>
+            <td>index</td>
+            <td>Backup Success</td>
+            <td>time in hours</td>
+        </tr>
+    </table>
+</div>
     <br>
     <button onclick="back(event)">Back</button>
 
@@ -77,6 +90,7 @@
             .then(response => response.json())
             .then(data => {
                 let single = data.data
+                
                 let { _id, googleServicAcc, ...rest } = { ...single }
                 let values = flattenObject(rest)
                 values["client_email"] = googleServicAcc["client_email"]
@@ -103,15 +117,80 @@
 
             })
 
+            // backup
+
         fetch(`${localStorage.getItem("url")}/tracking/single/${localStorage.getItem("license")}`, requestOptions)
             .then(response => response.json())
             .then(data => {
                 let single = data.data
-
                 // console.log(single)
 
-
                 const tableBody = document.getElementById("backup");
+
+                let count = 0
+
+                for (const item of single) {
+
+
+                    const row = document.createElement("tr");
+                    row.setAttribute("id", item)
+
+                    const field = document.createElement("td");
+                    field.textContent = count
+                    row.appendChild(field);
+
+
+                    const inputDate = moment(item);
+                    const outputDate = inputDate.add(0, 'hours').add(0, 'minutes');
+                    const outputDateString = outputDate.format("DD-MMM HH:mm");
+
+
+                    const value = document.createElement("td");
+                    value.textContent = outputDateString
+                    row.appendChild(value);
+
+                    let hours
+                    // get com current time
+                    if (count == 0) {
+                        let current = new Date()
+                        var differenceMs = current.getTime() - new Date(item).getTime();
+                        var differenceHours = differenceMs / (1000 * 60 * 60);
+                        hours = Math.floor(differenceHours)
+
+                    } else {
+                        var differenceMs = new Date(single[count - 1]).getTime() - new Date(item).getTime();
+                        var differenceHours = differenceMs / (1000 * 60 * 60);
+                        hours = Math.floor(differenceHours)
+                    }
+
+                    const hh = document.createElement("td");
+                    hh.textContent = hours
+
+                    if (hours > 24) {
+                        row.style.background = "red"
+                    }
+
+                    row.appendChild(hh);
+
+
+                    tableBody.appendChild(row);
+
+                    count++
+
+                }
+
+            })
+
+
+// success
+
+            fetch(`${localStorage.getItem("url")}/tracking/single/${localStorage.getItem("license")}`, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                let single = data.data
+                // console.log(single)
+
+                const tableBody = document.getElementById("success");
 
                 let count = 0
 
