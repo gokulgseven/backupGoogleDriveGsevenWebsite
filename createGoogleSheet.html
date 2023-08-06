@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #dropzone {
+            width: 300px;
+            height: 50px;
+            border: 2px dashed gray;
+            margin: 20px;
+            padding: 20px;
+        }
+
+        #gendetails {
+            width: 300px;
+            height: 50px;
+            border: 2px dashed gray;
+            margin: 20px;
+            padding: 20px;
+        }
+
+        #topinput {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="nav"></div>
+    <h1>Create Google Sheet License</h1>
+
+    <div id="topinput">
+        <div id="left-side">
+            <label>Add api file</label><br>
+            <div id="dropzone">Drop cred.json file here</div>
+        </div>
+
+    </div>
+
+    <form action="" onsubmit="event.preventDefault()">
+        <div id="form">
+
+        </div>
+        <button onclick="submitFn(event)">Submit</button>
+        <button onclick="back(event)">cancle</button>
+    </form>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+        var convertedJson = {}
+
+        function log() {
+            console.log(convertedJson)
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var dropzone = document.getElementById("dropzone");
+
+            // Prevent default behavior for drag events
+            dropzone.addEventListener("dragenter", preventDefault, false);
+            dropzone.addEventListener("dragover", preventDefault, false);
+            dropzone.addEventListener("dragleave", preventDefault, false);
+            dropzone.addEventListener("drop", handleDrop, false);
+
+            function preventDefault(event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            function handleDrop(event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                // Get the dropped file
+                var file = event.dataTransfer.files[0];
+
+                // Check if the file is a JSON file
+                if (file.type === "application/json") {
+                    var reader = new FileReader();
+
+                    // Read the file contents
+                    reader.onload = function (e) {
+                        var content = e.target.result;
+
+
+                        // Read the JSON file contents into a variable
+                        var jsonString = content; // Replace with the contents of your JSON file
+
+                        // Regular expression to extract the keys
+                        var regex = /"((?:\\.|[^"\\])*)":/g;
+                        var keys = [];
+                        var match;
+
+                        // Extract the keys from the JSON string
+                        while ((match = regex.exec(jsonString)) !== null) {
+                            keys.push(match[1]);
+                        }
+
+                        // Iterate over the extracted keys and retrieve their values
+                        var values = keys.map(function (key) {
+                            return JSON.parse('{"' + key.replace(/"/g, '\\"') + '": ' + jsonString + '}')[key];
+                        });
+
+
+                        for (const key in values[0]) {
+                            convertedJson["gsa_" + key] = values[0][key].replace(/\n/g, "\\n");
+                        }
+
+                        console.log(convertedJson)
+                        let gotvalue = document.getElementById("dropzone")
+                        gotvalue.innerHTML = convertedJson["gsa_client_email"]
+
+                    };
+
+                    reader.readAsText(file);
+                } else {
+                    console.log("Invalid file type. Please drop a JSON file.");
+                }
+            }
+        });
+        let def = {
+            "username": "gokul@gmail.com",
+            "status": true,
+        }
+
+        let def_list = Object.keys(def)
+
+        let form = document.getElementById("form");
+        for (let i = 0; i < def_list.length; i++) {
+            let label = document.createElement("label");
+
+            label.textContent = def_list[i]
+            let input = document.createElement("input");
+            input.setAttribute("id", def_list[i]);
+            input.setAttribute("size", "50");
+            input.style.marginLeft = "10px";
+            input.style.marginBottom = "10px";
+
+            if (def_list[i] == "status") {
+                input.setAttribute("type", "checkbox");
+                input.checked = true
+            }
+
+            form.appendChild(label)
+            form.appendChild(input)
+            let space = document.createElement("br")
+            form.appendChild(space)
+        }
+
+
+        function back() {
+            window.location.href = "googleSheet.html";
+        }
+        function submitFn() {
+            if (!convertedJson.hasOwnProperty("gsa_type")){
+                alert("please add the creds file")
+                return 
+            }
+            let data = {}
+            for (let i = 0; i < def_list.length; i++) {
+
+                if (def_list[i] == "status") {
+                    let boolvalue = document.getElementById(def_list[i])
+                    data[def_list[i]] = boolvalue.checked ? true : false
+                } else {
+                    data[def_list[i]] = document.getElementById(def_list[i]).value
+                }
+
+            }
+
+            data = { ...data, ...convertedJson }
+            // case a
+            let arr = Object.keys(data)
+            let x;
+            let a = {};
+            let b = {};
+
+            for (let i = 0; i < arr.length; i++) {
+                arr[i].startsWith("gsa") || arr[i].startsWith("bc") ? x = "" : a[arr[i]] = data[arr[i]]; //case a
+                arr[i].startsWith("gsa") ? b[arr[i].substring(4)] = data[arr[i]] : x = "";//case d 
+        
+            }
+      
+            let g = { ...a, googleServicAcc: b, }
+
+        
+
+            console.log(g)
+            const requestOptions = {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token"),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(g)
+            };
+
+            fetch(`${localStorage.getItem("url")}/googleSheetAdmin`, requestOptions)
+                .then(response => {
+                    if (response.ok) {
+                        console.log('POST request successful');
+                        window.location.href = "googleSheet.html";
+                    } else {
+                        console.log('POST request failed');
+                    }
+                })
+                .catch(error => {
+                    console.log('Error:', error);
+                });
+        }
+
+    </script>
+    <script>
+        $(function () {
+            $("#nav").load("nav.html");
+        });
+    </script>
+</body>
+
+</html>

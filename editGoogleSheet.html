@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="nav"></div>
+    <h1>Edit Google sheet License</h1>
+    <form action="" onsubmit="event.preventDefault()">
+        <div id="form"></div>
+        <button onclick="submitFn(event)">Submit</button>
+        <button onclick="back(event)">cancel</button>
+    </form>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script>
+        
+        let def = {
+            "username": "",
+            "gsa_type": "",
+            "gsa_project_id": "",
+            "gsa_private_key_id": "",
+            "gsa_private_key": "",
+            "gsa_client_email": "",
+            "gsa_client_id": "",
+            "gsa_auth_uri": "",
+            "gsa_token_uri": "",
+            "gsa_auth_provider_x509_cert_url": "",
+            "gsa_client_x509_cert_url": "",
+            "gsa_universe_domain": "",
+            "status": true,
+        }
+
+        let def_list = Object.keys(def)
+        const requestOptions = {
+            method: "GET",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("token"),
+            }
+        };
+
+        fetch(`${localStorage.getItem("url")}/googleSheetAdmin?id=${localStorage.getItem("license")}`, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                let single = data.data
+
+                //morph data 
+                let { googleServicAcc, ...rest } = { ...single }
+                let a = { ...rest }
+
+                let gsa = {}
+                for (item of Object.keys(googleServicAcc)) {
+                    gsa["gsa_" + item] = googleServicAcc[item]
+                }
+
+
+                let getData = { ...a, ...gsa }
+              
+
+                // console.log("getdata", getData)
+
+                //create form 
+
+
+                let form = document.getElementById("form");
+                for (let i = 0; i < def_list.length; i++) {
+                    let label = document.createElement("label");
+
+                    label.textContent = def_list[i]
+                    let input = document.createElement("input");
+                    input.setAttribute("id", def_list[i]);
+
+                    input.setAttribute("size", "50");
+                    input.style.marginLeft = "10px";
+                    input.style.marginBottom = "10px";
+
+                    if (def_list[i] == "gsa_client_x509_cert_url" || def_list[i] == "gsa_private_key") {
+                        input.setAttribute("size", "50");
+                    }
+
+                    if (def_list[i] == "status") {
+                        input.setAttribute("type", "checkbox");
+                        if (getData.hasOwnProperty(def_list[i])) {
+                            input.checked = getData[def_list[i]]
+                        }
+                    } else {
+                        if (getData.hasOwnProperty(def_list[i])) {
+                            input.value = getData[def_list[i]]
+                        }
+                    }
+                    form.appendChild(label)
+                    form.appendChild(input)
+                    let space = document.createElement("br")
+                    form.appendChild(space)
+                }
+
+            })
+
+        function back() {
+            window.location.href = "license.html";
+        }
+        function submitFn(event) {
+            event.preventDefault()
+            let data = {}
+            for (let i = 0; i < def_list.length; i++) {
+
+                if (def_list[i] == "status") {
+                    let boolvalue = document.getElementById(def_list[i])
+                    data[def_list[i]] = boolvalue.checked ? true : false
+                } else {
+
+                    data[def_list[i]] = document.getElementById(def_list[i]).value
+                }
+
+            }
+            // case a
+            let arr = Object.keys(data)
+            let x;
+            let a = {};
+            let b = {};
+           
+
+            for (let i = 0; i < arr.length; i++) {
+                // b[arr[i].substring(4)] = data[arr[i]];
+                arr[i].startsWith("gsa") || arr[i].startsWith("bc") ? x = "" : a[arr[i]] = data[arr[i]]; //case a
+                arr[i].startsWith("gsa") ? b[arr[i].substring(4)] = data[arr[i]] : x = "";//case d
+                
+                // g = {...a[i]}
+            }
+           
+
+           
+            let g = { ...a, googleServicAcc: b }
+
+    
+
+            console.log(g)
+            const requestOptions = {
+                method: "PUT",
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token"),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(g)
+            };
+
+            fetch(`${localStorage.getItem("url")}/googleSheetAdmin?id=${localStorage.getItem("license")}`, requestOptions)
+                .then(response => {
+                    if (response.ok) {
+                        console.log('POST request successful');
+                        window.location.href = "googleSheet.html";
+                    } else {
+                        console.log('POST request failed');
+                    }
+                })
+                .catch(error => {
+                    console.log('Error:', error);
+                });
+        }
+
+
+
+
+    </script>
+    <script>
+        $(function () {
+            $("#nav").load("nav.html");
+        });
+
+    </script>
+</body>
+
+</html>
